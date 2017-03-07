@@ -73,6 +73,15 @@ public class CheckoutControllerTest {
 	}
 
 	@Test
+	public void couponValidationTest() throws Exception {
+/*		CouponCode coupon = new CouponCode();
+		coupon.setCode("abcdefghijk");*/
+		mockMvc.perform(MockMvcRequestBuilders.post("/checkout/coupon").param("couponCode", "abcdefghijk")).andDo(print())
+				.andExpect(status().is3xxRedirection())
+				.andExpect(redirectedUrl("/error"));
+	}
+
+	@Test
 	public void noCartCouponTest() throws Exception {
 		when(sCart.getPurchase()).thenReturn(null);
 		mockMvc.perform(MockMvcRequestBuilders.get("/checkout/coupon")).andDo(print())

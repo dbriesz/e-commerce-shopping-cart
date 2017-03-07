@@ -3,10 +3,13 @@ package com.acme.ecommerce.domain;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import javax.validation.constraints.Size;
+
 @Component
 @Scope("session")
 public class CouponCode {
 
+	@Size(min = 5, max = 10)
 	private String code;
 	
 	public String getCode() {
