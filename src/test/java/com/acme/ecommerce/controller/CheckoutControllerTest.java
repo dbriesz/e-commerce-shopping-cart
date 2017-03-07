@@ -73,12 +73,10 @@ public class CheckoutControllerTest {
 	}
 
 	@Test
-	public void couponValidationTest() throws Exception {
-/*		CouponCode coupon = new CouponCode();
-		coupon.setCode("abcdefghijk");*/
-		mockMvc.perform(MockMvcRequestBuilders.post("/checkout/coupon").param("couponCode", "abcdefghijk")).andDo(print())
+	public void postCouponTestValidationFail() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders.post("/checkout/coupon").param("couponCode", "abc")).andDo(print())
 				.andExpect(status().is3xxRedirection())
-				.andExpect(redirectedUrl("/error"));
+				.andExpect(redirectedUrl("/checkout/coupon"));
 	}
 
 	@Test

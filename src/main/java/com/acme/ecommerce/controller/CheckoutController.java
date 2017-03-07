@@ -69,9 +69,13 @@ public class CheckoutController {
 	}
 
 	@RequestMapping(path="/coupon", method = RequestMethod.POST)
-	String postCouponCode(Model model, @ModelAttribute(value="couponCode") CouponCode couponCode) {
-    	sCart.setCouponCode(couponCode);
-   	
+	String postCouponCode(Model model, @Valid @ModelAttribute(value="couponCode") CouponCode couponCode, BindingResult result) {
+		if (result.hasErrors()) {
+			return "redirect:/checkout/coupon";
+		}
+
+		sCart.setCouponCode(couponCode);
+
 		return "redirect:shipping";
 	}
 	
