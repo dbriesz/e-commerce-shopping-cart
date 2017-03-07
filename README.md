@@ -1,0 +1,1 @@
+This application is an e-commerce shopping cart Spring web application that utilizes Hibernate as an ORM.  It contains a number of bug fixes, enhancements and unit tests that improve upon the original application.
