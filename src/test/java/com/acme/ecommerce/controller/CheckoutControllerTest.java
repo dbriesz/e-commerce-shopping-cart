@@ -74,7 +74,8 @@ public class CheckoutControllerTest {
 
 	@Test
 	public void postCouponTestValidationFail() throws Exception {
-		mockMvc.perform(MockMvcRequestBuilders.post("/checkout/coupon").param("couponCode", "abc")).andDo(print())
+
+		mockMvc.perform(MockMvcRequestBuilders.post("/checkout/coupon").param("code", "abc")).andDo(print())
 				.andExpect(status().is3xxRedirection())
 				.andExpect(redirectedUrl("/checkout/coupon"));
 	}

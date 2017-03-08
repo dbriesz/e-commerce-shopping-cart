@@ -69,7 +69,7 @@ public class CheckoutController {
 	}
 
 	@RequestMapping(path="/coupon", method = RequestMethod.POST)
-	String postCouponCode(Model model, @Valid @ModelAttribute(value="couponCode") CouponCode couponCode, BindingResult result) {
+	String postCouponCode(Model model, @ModelAttribute(value="couponCode") @Valid CouponCode couponCode, BindingResult result) {
 		if (result.hasErrors()) {
 			return "redirect:/checkout/coupon";
 		}
