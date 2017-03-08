@@ -1,6 +1,7 @@
 package com.acme.ecommerce.domain;
 
 import javax.persistence.*;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 
 @Entity(name="product_purchase")

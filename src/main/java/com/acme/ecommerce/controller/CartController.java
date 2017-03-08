@@ -69,37 +69,42 @@ public class CartController {
 		redirect.setExposeModelAttributes(false);
     	
     	Product addProduct = productService.findById(productId);
-		if (addProduct != null) {
-	    	logger.debug("Adding Product: " + addProduct.getId());
-	    	
-    		Purchase purchase = sCart.getPurchase();
-    		if (purchase == null) {
-    			purchase = new Purchase();
-    			sCart.setPurchase(purchase);
-    		} else {
-    			for (ProductPurchase pp : purchase.getProductPurchases()) {
-    				if (pp.getProduct() != null) {
-    					if (pp.getProduct().getId().equals(productId)) {
-    						pp.setQuantity(pp.getQuantity() + quantity);
-    						productAlreadyInCart = true;
-    						break;
-    					}
-    				}
-    			}
-    		}
-    		if (!productAlreadyInCart) {
-    			ProductPurchase newProductPurchase = new ProductPurchase();
-				newProductPurchase.setProduct(addProduct);
-				newProductPurchase.setQuantity(quantity);
-				newProductPurchase.setPurchase(purchase);
-				purchase.getProductPurchases().add(newProductPurchase);
-    		}
-    		logger.debug("Added " + quantity + " of " + addProduct.getName() + " to cart");
-    		sCart.setPurchase(purchaseService.save(purchase));
-		} else {
-			logger.error("Attempt to add unknown product: " + productId);
-			redirect.setUrl("/error");
-		}
+    	if (!sufficientStock(addProduct, quantity)) {
+            logger.error("Insufficient %s in stock.", addProduct.getName());
+            redirect.setUrl("/error");
+        } else {
+            if (addProduct != null) {
+                logger.debug("Adding Product: " + addProduct.getId());
+
+                Purchase purchase = sCart.getPurchase();
+                if (purchase == null) {
+                    purchase = new Purchase();
+                    sCart.setPurchase(purchase);
+                } else {
+                    for (ProductPurchase pp : purchase.getProductPurchases()) {
+                        if (pp.getProduct() != null) {
+                            if (pp.getProduct().getId().equals(productId)) {
+                                pp.setQuantity(pp.getQuantity() + quantity);
+                                productAlreadyInCart = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (!productAlreadyInCart) {
+                    ProductPurchase newProductPurchase = new ProductPurchase();
+                    newProductPurchase.setProduct(addProduct);
+                    newProductPurchase.setQuantity(quantity);
+                    newProductPurchase.setPurchase(purchase);
+                    purchase.getProductPurchases().add(newProductPurchase);
+                }
+                logger.debug("Added " + quantity + " of " + addProduct.getName() + " to cart");
+                sCart.setPurchase(purchaseService.save(purchase));
+            } else {
+                logger.error("Attempt to add unknown product: " + productId);
+                redirect.setUrl("/error");
+            }
+        }
 
     	return redirect;
     }
@@ -111,32 +116,37 @@ public class CartController {
 		redirect.setExposeModelAttributes(false);
     	
     	Product updateProduct = productService.findById(productId);
-    	if (updateProduct != null) {
-    		Purchase purchase = sCart.getPurchase();
-    		if (purchase == null) {
-    			logger.error("Unable to find shopping cart for update");
-    			redirect.setUrl("/error");
-    		} else {
-    			for (ProductPurchase pp : purchase.getProductPurchases()) {
-    				if (pp.getProduct() != null) {
-    					if (pp.getProduct().getId().equals(productId)) {
-    						if (newQuantity > 0) {
-    							pp.setQuantity(newQuantity);
-    							logger.debug("Updated " + updateProduct.getName() + " to " + newQuantity);
-    						} else {
-    							purchase.getProductPurchases().remove(pp);
-    							logger.debug("Removed " + updateProduct.getName() + " because quantity was set to " + newQuantity);
-    						}
-    						break;
-    					}
-    				}
-    			}
-    		}
-    		sCart.setPurchase(purchaseService.save(purchase));
-    	} else {
-    		logger.error("Attempt to update on non-existent product");
-    		redirect.setUrl("/error");
-    	}
+    	if (!sufficientStock(updateProduct, newQuantity)) {
+            logger.error("Insufficient %s in stock.", updateProduct.getName());
+            redirect.setUrl("/error");
+        } else {
+            if (updateProduct != null) {
+                Purchase purchase = sCart.getPurchase();
+                if (purchase == null) {
+                    logger.error("Unable to find shopping cart for update");
+                    redirect.setUrl("/error");
+                } else {
+                    for (ProductPurchase pp : purchase.getProductPurchases()) {
+                        if (pp.getProduct() != null) {
+                            if (pp.getProduct().getId().equals(productId)) {
+                                if (newQuantity > 0) {
+                                    pp.setQuantity(newQuantity);
+                                    logger.debug("Updated " + updateProduct.getName() + " to " + newQuantity);
+                                } else {
+                                    purchase.getProductPurchases().remove(pp);
+                                    logger.debug("Removed " + updateProduct.getName() + " because quantity was set to " + newQuantity);
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+                sCart.setPurchase(purchaseService.save(purchase));
+            } else {
+                logger.error("Attempt to update on non-existent product");
+                redirect.setUrl("/error");
+            }
+        }
     	
     	return redirect;
     }
@@ -197,6 +207,6 @@ public class CartController {
     }
 
     private boolean sufficientStock(Product product, int quantity) {
-		return quantity > product.getQuantity();
+		return quantity <= product.getQuantity();
 	}
 }
