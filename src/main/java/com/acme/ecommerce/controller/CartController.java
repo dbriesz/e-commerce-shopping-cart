@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.view.RedirectView;
 
 import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
 import java.math.BigDecimal;
 
 @Controller
@@ -88,10 +89,10 @@ public class CartController {
     		}
     		if (!productAlreadyInCart) {
     			ProductPurchase newProductPurchase = new ProductPurchase();
-    			newProductPurchase.setProduct(addProduct);
-    			newProductPurchase.setQuantity(quantity);
-    			newProductPurchase.setPurchase(purchase);
-        		purchase.getProductPurchases().add(newProductPurchase);
+				newProductPurchase.setProduct(addProduct);
+				newProductPurchase.setQuantity(quantity);
+				newProductPurchase.setPurchase(purchase);
+				purchase.getProductPurchases().add(newProductPurchase);
     		}
     		logger.debug("Added " + quantity + " of " + addProduct.getName() + " to cart");
     		sCart.setPurchase(purchaseService.save(purchase));
@@ -194,4 +195,8 @@ public class CartController {
 		
     	return redirect;
     }
+
+    private boolean sufficientStock(Product product, int quantity) {
+		return quantity > product.getQuantity();
+	}
 }

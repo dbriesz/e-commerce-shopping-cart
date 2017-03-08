@@ -111,6 +111,18 @@ public class CartControllerTest {
 	}
 
 	@Test
+	public void addToCartIfInStockTest() throws Exception {
+		Product product = productBuilder();
+
+		when(productService.findById(1L)).thenReturn(product);
+
+		mockMvc.perform(MockMvcRequestBuilders.post("/cart/add").param("quantity", "10").param("productId", "1"))
+				.andDo(print())
+				.andExpect(status().is3xxRedirection())
+				.andExpect(redirectedUrl("/error"));
+	}
+
+	@Test
 	public void updateCartTest() throws Exception {
 		Product product = productBuilder();
 
