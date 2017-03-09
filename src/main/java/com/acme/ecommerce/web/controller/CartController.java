@@ -106,8 +106,11 @@ public class CartController {
                 purchase.getProductPurchases().add(newProductPurchase);
             }
             logger.debug("Added " + quantity + " of " + addProduct.getName() + " to cart");
-            productService.checkIfProductInStock(addProduct, quantity);
-            redirectAttributes.addFlashAttribute("flash",new FlashMessage("Insufficient product in stock", FAILURE));
+            try {
+                productService.checkIfProductInStock(addProduct, quantity);
+            } catch (QuantityExceedsStockException e) {
+                redirectAttributes.addFlashAttribute("flash",new FlashMessage("Insufficient product in stock", FAILURE));
+            }
             sCart.setPurchase(purchaseService.save(purchase));
         } else {
             logger.error("Attempt to add unknown product: " + productId);
@@ -147,8 +150,12 @@ public class CartController {
                     }
                 }
             }
-            productService.checkIfProductInStock(updateProduct, newQuantity);
-            redirectAttributes.addFlashAttribute("flash",new FlashMessage("Insufficient product in stock", FAILURE));
+
+            try {
+                productService.checkIfProductInStock(updateProduct, newQuantity);
+            } catch (QuantityExceedsStockException e) {
+                redirectAttributes.addFlashAttribute("flash",new FlashMessage("Insufficient product in stock", FAILURE));
+            }
             sCart.setPurchase(purchaseService.save(purchase));
         } else {
             logger.error("Attempt to update on non-existent product");

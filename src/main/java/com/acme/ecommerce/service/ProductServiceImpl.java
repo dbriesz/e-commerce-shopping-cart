@@ -39,7 +39,7 @@ public class ProductServiceImpl implements ProductService {
 
 	@Override
 	public void checkIfProductInStock(Product product, int quantity) throws Exception {
-		if (product.getQuantity() > quantity) {
+		if (product.getQuantity() < quantity) {
 			throw new QuantityExceedsStockException();
 		}
 	}
