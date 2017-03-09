@@ -73,8 +73,7 @@ public class CartController {
     
     @RequestMapping(path="/add", method = RequestMethod.POST)
     public RedirectView addToCart(@ModelAttribute(value="productId") long productId,
-                                  @ModelAttribute(value="quantity") int quantity,
-                                  RedirectAttributes redirectAttributes) throws Exception {
+                                  @ModelAttribute(value="quantity") int quantity) throws Exception {
     	boolean productAlreadyInCart = false;
     	RedirectView redirect = new RedirectView("/product/");
 		redirect.setExposeModelAttributes(false);
@@ -106,11 +105,7 @@ public class CartController {
                 purchase.getProductPurchases().add(newProductPurchase);
             }
             logger.debug("Added " + quantity + " of " + addProduct.getName() + " to cart");
-            try {
-                productService.checkIfProductInStock(addProduct, quantity);
-            } catch (QuantityExceedsStockException e) {
-                redirectAttributes.addFlashAttribute("flash",new FlashMessage("Insufficient product in stock", FAILURE));
-            }
+            productService.checkIfProductInStock(addProduct, quantity);
             sCart.setPurchase(purchaseService.save(purchase));
         } else {
             logger.error("Attempt to add unknown product: " + productId);
@@ -122,8 +117,7 @@ public class CartController {
  
     @RequestMapping(path="/update", method = RequestMethod.POST)
     public RedirectView updateCart(@ModelAttribute(value="productId") long productId,
-                                   @ModelAttribute(value="newQuantity") int newQuantity,
-                                   RedirectAttributes redirectAttributes) throws Exception {
+                                   @ModelAttribute(value="newQuantity") int newQuantity) throws Exception {
     	logger.debug("Updating Product: " + productId + " with Quantity: " + newQuantity);
 		RedirectView redirect = new RedirectView("/cart");
 		redirect.setExposeModelAttributes(false);
@@ -150,12 +144,7 @@ public class CartController {
                     }
                 }
             }
-
-            try {
-                productService.checkIfProductInStock(updateProduct, newQuantity);
-            } catch (QuantityExceedsStockException e) {
-                redirectAttributes.addFlashAttribute("flash",new FlashMessage("Insufficient product in stock", FAILURE));
-            }
+            productService.checkIfProductInStock(updateProduct, newQuantity);
             sCart.setPurchase(purchaseService.save(purchase));
         } else {
             logger.error("Attempt to update on non-existent product");
