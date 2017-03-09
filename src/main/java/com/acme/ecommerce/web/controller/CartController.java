@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.FlashMap;
-import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.support.RequestContextUtils;
 import org.springframework.web.servlet.view.RedirectView;
 
@@ -72,7 +72,9 @@ public class CartController {
     }
     
     @RequestMapping(path="/add", method = RequestMethod.POST)
-    public RedirectView addToCart(@ModelAttribute(value="productId") long productId, @ModelAttribute(value="quantity") int quantity) {
+    public RedirectView addToCart(@ModelAttribute(value="productId") long productId,
+                                  @ModelAttribute(value="quantity") int quantity,
+                                  RedirectAttributes redirectAttributes) throws Exception {
     	boolean productAlreadyInCart = false;
     	RedirectView redirect = new RedirectView("/product/");
 		redirect.setExposeModelAttributes(false);
@@ -104,11 +106,8 @@ public class CartController {
                 purchase.getProductPurchases().add(newProductPurchase);
             }
             logger.debug("Added " + quantity + " of " + addProduct.getName() + " to cart");
-            try {
-                productService.checkIfProductInStock(addProduct, quantity);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            productService.checkIfProductInStock(addProduct, quantity);
+            redirectAttributes.addFlashAttribute("flash",new FlashMessage("Insufficient product in stock", FAILURE));
             sCart.setPurchase(purchaseService.save(purchase));
         } else {
             logger.error("Attempt to add unknown product: " + productId);
@@ -119,7 +118,9 @@ public class CartController {
     }
  
     @RequestMapping(path="/update", method = RequestMethod.POST)
-    public RedirectView updateCart(@ModelAttribute(value="productId") long productId, @ModelAttribute(value="newQuantity") int newQuantity) {
+    public RedirectView updateCart(@ModelAttribute(value="productId") long productId,
+                                   @ModelAttribute(value="newQuantity") int newQuantity,
+                                   RedirectAttributes redirectAttributes) throws Exception {
     	logger.debug("Updating Product: " + productId + " with Quantity: " + newQuantity);
 		RedirectView redirect = new RedirectView("/cart");
 		redirect.setExposeModelAttributes(false);
@@ -146,11 +147,8 @@ public class CartController {
                     }
                 }
             }
-            try {
-                productService.checkIfProductInStock(updateProduct, newQuantity);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            productService.checkIfProductInStock(updateProduct, newQuantity);
+            redirectAttributes.addFlashAttribute("flash",new FlashMessage("Insufficient product in stock", FAILURE));
             sCart.setPurchase(purchaseService.save(purchase));
         } else {
             logger.error("Attempt to update on non-existent product");
