@@ -1,4 +1,4 @@
-package com.acme.ecommerce.controller;
+package com.acme.ecommerce.web.controller;
 
 import com.acme.ecommerce.Application;
 import org.junit.Before;

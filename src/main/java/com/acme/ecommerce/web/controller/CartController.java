@@ -1,9 +1,11 @@
-package com.acme.ecommerce.controller;
+package com.acme.ecommerce.web.controller;
 
 import com.acme.ecommerce.domain.Product;
 import com.acme.ecommerce.domain.ProductPurchase;
 import com.acme.ecommerce.domain.Purchase;
 import com.acme.ecommerce.domain.ShoppingCart;
+import com.acme.ecommerce.web.FlashMessage;
+import com.acme.ecommerce.web.exceptions.QuantityExceedsStockException;
 import com.acme.ecommerce.service.ProductService;
 import com.acme.ecommerce.service.PurchaseService;
 import org.slf4j.Logger;
@@ -12,14 +14,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.FlashMap;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.support.RequestContextUtils;
 import org.springframework.web.servlet.view.RedirectView;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import javax.validation.Valid;
 import java.math.BigDecimal;
+
+import static com.acme.ecommerce.web.FlashMessage.Status.FAILURE;
+import static com.acme.ecommerce.web.ReferrerInterceptor.redirect;
 
 @Controller
 @RequestMapping("/cart")
@@ -69,41 +78,36 @@ public class CartController {
 		redirect.setExposeModelAttributes(false);
     	
     	Product addProduct = productService.findById(productId);
-    	if (!sufficientStock(addProduct, quantity)) {
-            logger.error("Insufficient %s in stock.", addProduct.getName());
-            redirect.setUrl("/error");
-        } else {
-            if (addProduct != null) {
-                logger.debug("Adding Product: " + addProduct.getId());
+        if (addProduct != null) {
+            logger.debug("Adding Product: " + addProduct.getId());
 
-                Purchase purchase = sCart.getPurchase();
-                if (purchase == null) {
-                    purchase = new Purchase();
-                    sCart.setPurchase(purchase);
-                } else {
-                    for (ProductPurchase pp : purchase.getProductPurchases()) {
-                        if (pp.getProduct() != null) {
-                            if (pp.getProduct().getId().equals(productId)) {
-                                pp.setQuantity(pp.getQuantity() + quantity);
-                                productAlreadyInCart = true;
-                                break;
-                            }
+            Purchase purchase = sCart.getPurchase();
+            if (purchase == null) {
+                purchase = new Purchase();
+                sCart.setPurchase(purchase);
+            } else {
+                for (ProductPurchase pp : purchase.getProductPurchases()) {
+                    if (pp.getProduct() != null) {
+                        if (pp.getProduct().getId().equals(productId)) {
+                            pp.setQuantity(pp.getQuantity() + quantity);
+                            productAlreadyInCart = true;
+                            break;
                         }
                     }
                 }
-                if (!productAlreadyInCart) {
-                    ProductPurchase newProductPurchase = new ProductPurchase();
-                    newProductPurchase.setProduct(addProduct);
-                    newProductPurchase.setQuantity(quantity);
-                    newProductPurchase.setPurchase(purchase);
-                    purchase.getProductPurchases().add(newProductPurchase);
-                }
-                logger.debug("Added " + quantity + " of " + addProduct.getName() + " to cart");
-                sCart.setPurchase(purchaseService.save(purchase));
-            } else {
-                logger.error("Attempt to add unknown product: " + productId);
-                redirect.setUrl("/error");
             }
+            if (!productAlreadyInCart) {
+                ProductPurchase newProductPurchase = new ProductPurchase();
+                newProductPurchase.setProduct(addProduct);
+                newProductPurchase.setQuantity(quantity);
+                newProductPurchase.setPurchase(purchase);
+                purchase.getProductPurchases().add(newProductPurchase);
+            }
+            logger.debug("Added " + quantity + " of " + addProduct.getName() + " to cart");
+            sCart.setPurchase(purchaseService.save(purchase));
+        } else {
+            logger.error("Attempt to add unknown product: " + productId);
+            redirect.setUrl("/error");
         }
 
     	return redirect;
@@ -116,36 +120,31 @@ public class CartController {
 		redirect.setExposeModelAttributes(false);
     	
     	Product updateProduct = productService.findById(productId);
-    	if (!sufficientStock(updateProduct, newQuantity)) {
-            logger.error("Insufficient %s in stock.", updateProduct.getName());
-            redirect.setUrl("/error");
-        } else {
-            if (updateProduct != null) {
-                Purchase purchase = sCart.getPurchase();
-                if (purchase == null) {
-                    logger.error("Unable to find shopping cart for update");
-                    redirect.setUrl("/error");
-                } else {
-                    for (ProductPurchase pp : purchase.getProductPurchases()) {
-                        if (pp.getProduct() != null) {
-                            if (pp.getProduct().getId().equals(productId)) {
-                                if (newQuantity > 0) {
-                                    pp.setQuantity(newQuantity);
-                                    logger.debug("Updated " + updateProduct.getName() + " to " + newQuantity);
-                                } else {
-                                    purchase.getProductPurchases().remove(pp);
-                                    logger.debug("Removed " + updateProduct.getName() + " because quantity was set to " + newQuantity);
-                                }
-                                break;
+        if (updateProduct != null) {
+            Purchase purchase = sCart.getPurchase();
+            if (purchase == null) {
+                logger.error("Unable to find shopping cart for update");
+                redirect.setUrl("/error");
+            } else {
+                for (ProductPurchase pp : purchase.getProductPurchases()) {
+                    if (pp.getProduct() != null) {
+                        if (pp.getProduct().getId().equals(productId)) {
+                            if (newQuantity > 0) {
+                                pp.setQuantity(newQuantity);
+                                logger.debug("Updated " + updateProduct.getName() + " to " + newQuantity);
+                            } else {
+                                purchase.getProductPurchases().remove(pp);
+                                logger.debug("Removed " + updateProduct.getName() + " because quantity was set to " + newQuantity);
                             }
+                            break;
                         }
                     }
                 }
-                sCart.setPurchase(purchaseService.save(purchase));
-            } else {
-                logger.error("Attempt to update on non-existent product");
-                redirect.setUrl("/error");
             }
+            sCart.setPurchase(purchaseService.save(purchase));
+        } else {
+            logger.error("Attempt to update on non-existent product");
+            redirect.setUrl("/error");
         }
     	
     	return redirect;
@@ -206,7 +205,12 @@ public class CartController {
     	return redirect;
     }
 
-    private boolean sufficientStock(Product product, int quantity) {
-		return quantity <= product.getQuantity();
-	}
+    @ExceptionHandler(QuantityExceedsStockException.class)
+    public String handleError(Model model, HttpServletRequest req, Exception ex) {
+        FlashMap flashMap = RequestContextUtils.getOutputFlashMap(req);
+        if (flashMap != null) {
+            flashMap.put("flash", new FlashMessage(ex.getMessage(), FAILURE));
+        }
+        return redirect(req);
+    }
 }

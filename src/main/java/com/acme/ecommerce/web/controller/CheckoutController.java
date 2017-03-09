@@ -1,4 +1,4 @@
-package com.acme.ecommerce.controller;
+package com.acme.ecommerce.web.controller;
 
 import com.acme.ecommerce.domain.*;
 import com.acme.ecommerce.service.PurchaseService;
@@ -26,7 +26,7 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static com.acme.ecommerce.controller.WebConstants.*;
+import static com.acme.ecommerce.web.controller.WebConstants.*;
 
 
 @Controller

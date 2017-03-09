@@ -11,4 +11,6 @@ public interface ProductService {
 	public Page<Product> findAll(Pageable pageable);
 	
 	public Product findById(Long id);
+
+	void checkIfProductInStock(Product product, int quantity) throws Exception;
 }

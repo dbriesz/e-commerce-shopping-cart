@@ -1,6 +1,7 @@
 package com.acme.ecommerce.service;
 
 import com.acme.ecommerce.domain.Product;
+import com.acme.ecommerce.web.exceptions.QuantityExceedsStockException;
 import com.acme.ecommerce.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -12,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProductServiceImpl implements ProductService {
 	
 	private final ProductRepository repository;
-	
+
 	@Autowired
     public ProductServiceImpl(ProductRepository repository) {
         this.repository = repository;
@@ -36,4 +37,10 @@ public class ProductServiceImpl implements ProductService {
 		return result;
 	}
 
+	@Override
+	public void checkIfProductInStock(Product product, int quantity) throws Exception {
+		if (product.getQuantity() > quantity) {
+			throw new QuantityExceedsStockException();
+		}
+	}
 }
