@@ -239,7 +239,9 @@ public class CheckoutController {
     		model.addAttribute("orderNumber", purchase.getOrderNumber());
     		model.addAttribute("shippingAddress", purchase.getShippingAddress());
     		model.addAttribute("billingAddress", purchase.getBillingAddress());
-    		model.addAttribute("creditCard", purchase.getCreditCardNumber());
+
+			String creditCardNumber = purchase.getCreditCardNumber();
+			model.addAttribute("creditCard", "x" + creditCardNumber.substring(creditCardNumber.length() - 4));
     	} else {
     		logger.error("No purchases Found!");
     		return("redirect:/error");

@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.FlashMap;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.support.RequestContextUtils;
 import org.springframework.web.servlet.view.RedirectView;
 
@@ -102,10 +101,10 @@ public class CartController {
                 newProductPurchase.setProduct(addProduct);
                 newProductPurchase.setQuantity(quantity);
                 newProductPurchase.setPurchase(purchase);
+                productService.checkIfProductInStock(newProductPurchase.getProduct(), newProductPurchase.getQuantity());
                 purchase.getProductPurchases().add(newProductPurchase);
             }
             logger.debug("Added " + quantity + " of " + addProduct.getName() + " to cart");
-            productService.checkIfProductInStock(addProduct, quantity);
             sCart.setPurchase(purchaseService.save(purchase));
         } else {
             logger.error("Attempt to add unknown product: " + productId);
@@ -133,6 +132,7 @@ public class CartController {
                     if (pp.getProduct() != null) {
                         if (pp.getProduct().getId().equals(productId)) {
                             if (newQuantity > 0) {
+                                productService.checkIfProductInStock(updateProduct, newQuantity);
                                 pp.setQuantity(newQuantity);
                                 logger.debug("Updated " + updateProduct.getName() + " to " + newQuantity);
                             } else {
@@ -144,7 +144,6 @@ public class CartController {
                     }
                 }
             }
-            productService.checkIfProductInStock(updateProduct, newQuantity);
             sCart.setPurchase(purchaseService.save(purchase));
         } else {
             logger.error("Attempt to update on non-existent product");
