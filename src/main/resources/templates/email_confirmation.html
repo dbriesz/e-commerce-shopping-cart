@@ -1,15 +1,11 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8"/>
-        <meta http-equiv="x-ua-compatible" content="ie=edge"/>
-        <title>CartShop Email Receipt</title>
-        <link href='https://fonts.googleapis.com/css?family=Roboto:400,700|Roboto+Condensed:400,700' rel='stylesheet' type='text/css'/>
-    </head>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="layout :: head"></head>
     <body>
         <header>
             <h1>CartShop</h1>
         </header>
+        <div th:replace="layout :: flash"></div>
         <section class="checkout">
             <h2>Your Order is Complete!</h2>
             <div class="checkout-container">
@@ -40,13 +36,16 @@
                         </tr>
                     </table>
                     <br />
-                    <div class="summary-info">
+                    <!--<div class="summary-info">-->
+<!--
                         <table th:unless="${billingAddress != null}">
                         	<th>Billing Info:</th>
                         	<tr>
                         		<td>Same as shipping</td>
                         	</tr>
                         </table>
+-->
+<!--
 	                    <table th:if ="${billingAddress != null}" th:object="${billingAddress}">
 	                        <th>Billing Info:</th>
 	                        <tr>
@@ -68,11 +67,14 @@
 	                        	<td th:text="*{phoneNumber}">phone</td>
 	                        </tr>
 	                    </table>
-                    </div>
+-->
+                    <!--</div>-->
+<!--
                     <div class="summary-info">
                         <h3>Billing Info:</h3>
                         <span th:text="|Credit Card ${creditCard}|">Credit Card XXXX</span>
                     </div>
+-->
                 </div>
                 <div class="mini-cart">
                     <h3>Order Summary</h3>

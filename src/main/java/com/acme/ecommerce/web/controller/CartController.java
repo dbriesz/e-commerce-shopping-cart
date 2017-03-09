@@ -78,6 +78,8 @@ public class CartController {
 		redirect.setExposeModelAttributes(false);
     	
     	Product addProduct = productService.findById(productId);
+        productService.checkIfProductInStock(addProduct, quantity);
+
         if (addProduct != null) {
             logger.debug("Adding Product: " + addProduct.getId());
 
@@ -101,7 +103,6 @@ public class CartController {
                 newProductPurchase.setProduct(addProduct);
                 newProductPurchase.setQuantity(quantity);
                 newProductPurchase.setPurchase(purchase);
-                productService.checkIfProductInStock(newProductPurchase.getProduct(), newProductPurchase.getQuantity());
                 purchase.getProductPurchases().add(newProductPurchase);
             }
             logger.debug("Added " + quantity + " of " + addProduct.getName() + " to cart");
@@ -122,6 +123,8 @@ public class CartController {
 		redirect.setExposeModelAttributes(false);
     	
     	Product updateProduct = productService.findById(productId);
+        productService.checkIfProductInStock(updateProduct, newQuantity);
+
         if (updateProduct != null) {
             Purchase purchase = sCart.getPurchase();
             if (purchase == null) {
@@ -132,7 +135,6 @@ public class CartController {
                     if (pp.getProduct() != null) {
                         if (pp.getProduct().getId().equals(productId)) {
                             if (newQuantity > 0) {
-                                productService.checkIfProductInStock(updateProduct, newQuantity);
                                 pp.setQuantity(newQuantity);
                                 logger.debug("Updated " + updateProduct.getName() + " to " + newQuantity);
                             } else {
