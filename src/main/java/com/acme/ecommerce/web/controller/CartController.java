@@ -104,6 +104,11 @@ public class CartController {
                 purchase.getProductPurchases().add(newProductPurchase);
             }
             logger.debug("Added " + quantity + " of " + addProduct.getName() + " to cart");
+            try {
+                productService.checkIfProductInStock(addProduct, quantity);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             sCart.setPurchase(purchaseService.save(purchase));
         } else {
             logger.error("Attempt to add unknown product: " + productId);
@@ -140,6 +145,11 @@ public class CartController {
                         }
                     }
                 }
+            }
+            try {
+                productService.checkIfProductInStock(updateProduct, newQuantity);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
             sCart.setPurchase(purchaseService.save(purchase));
         } else {
