@@ -27,7 +27,6 @@ import javax.servlet.http.HttpSession;
 import java.math.BigDecimal;
 
 import static com.acme.ecommerce.web.FlashMessage.Status.FAILURE;
-import static com.acme.ecommerce.web.ReferrerInterceptor.redirect;
 
 @Controller
 @RequestMapping("/cart")
@@ -78,7 +77,6 @@ public class CartController {
 		redirect.setExposeModelAttributes(false);
     	
     	Product addProduct = productService.findById(productId);
-        productService.checkIfProductInStock(addProduct, quantity);
 
         if (addProduct != null) {
             logger.debug("Adding Product: " + addProduct.getId());
@@ -91,6 +89,7 @@ public class CartController {
                 for (ProductPurchase pp : purchase.getProductPurchases()) {
                     if (pp.getProduct() != null) {
                         if (pp.getProduct().getId().equals(productId)) {
+                            productService.checkIfProductInStock(addProduct, (pp.getQuantity() + quantity));
                             pp.setQuantity(pp.getQuantity() + quantity);
                             productAlreadyInCart = true;
                             break;
@@ -99,6 +98,7 @@ public class CartController {
                 }
             }
             if (!productAlreadyInCart) {
+                productService.checkIfProductInStock(addProduct, quantity);
                 ProductPurchase newProductPurchase = new ProductPurchase();
                 newProductPurchase.setProduct(addProduct);
                 newProductPurchase.setQuantity(quantity);
@@ -211,11 +211,9 @@ public class CartController {
     }
 
     @ExceptionHandler(QuantityExceedsStockException.class)
-    public String handleError(Model model, HttpServletRequest req, Exception ex) {
-        FlashMap flashMap = RequestContextUtils.getOutputFlashMap(req);
-        if (flashMap != null) {
-            flashMap.put("flash", new FlashMessage(ex.getMessage(), FAILURE));
-        }
-        return redirect(req);
+    public String exceedsStock(HttpServletRequest request, Exception ex) {
+        FlashMap flashMap = RequestContextUtils.getOutputFlashMap(request);
+        flashMap.put("flash", new FlashMessage(ex.getMessage(), FAILURE));
+        return "redirect:" + request.getHeader("referer");
     }
 }
