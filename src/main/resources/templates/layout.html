@@ -18,7 +18,9 @@
         <ul>
             <li><a href="#">About</a></li>
             <li><a href="#">FAQ</a></li>
-            <li><a name="cartButton" class="button icon-right" href="/cart">View Cart <i class="material-icons">shopping_cart</i></a></li>
+            <li><a name="cartButton" class="button icon-right" href="/cart">View Cart <i class="material-icons">shopping_cart</i></a>
+                <span th:if="${purchase != null and not #lists.isEmpty(purchase.productPurchases)}" th:text="${'Subtotal: $' + #numbers.formatDecimal(subTotal, 1, 2, 'POINT')}"></span>
+            </li>
         </ul>
     </nav>
 </header>
