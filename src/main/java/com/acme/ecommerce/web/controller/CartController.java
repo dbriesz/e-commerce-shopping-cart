@@ -50,7 +50,7 @@ public class CartController {
     public String viewCart(Model model) {
     	logger.debug("Getting Product List");
     	logger.debug("Session ID = " + session.getId());
-    	
+
     	Purchase purchase = sCart.getPurchase();
     	BigDecimal subTotal = new BigDecimal(0);
     	
@@ -215,5 +215,22 @@ public class CartController {
         FlashMap flashMap = RequestContextUtils.getOutputFlashMap(request);
         flashMap.put("flash", new FlashMessage(ex.getMessage(), FAILURE));
         return "redirect:" + request.getHeader("referer");
+    }
+
+    private static BigDecimal computeSubtotal(Purchase purchase) {
+        BigDecimal subTotal = new BigDecimal(0);
+
+        for (ProductPurchase pp : purchase.getProductPurchases()) {
+            subTotal = subTotal.add(pp.getProduct().getPrice().multiply(new BigDecimal(pp.getQuantity())));
+        }
+        return subTotal;
+    }
+
+    public static void addCartToModel(Model model, ShoppingCart cart) {
+        if (cart.getPurchase() != null) {
+            model.addAttribute("cart", cart);
+            BigDecimal subTotal = computeSubtotal(cart.getPurchase());
+            model.addAttribute("subTotal", subTotal);
+        }
     }
 }

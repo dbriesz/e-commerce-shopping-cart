@@ -2,11 +2,13 @@ package com.acme.ecommerce.web.controller;
 
 import com.acme.ecommerce.domain.Product;
 import com.acme.ecommerce.domain.ProductPurchase;
+import com.acme.ecommerce.domain.ShoppingCart;
 import com.acme.ecommerce.service.ProductService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,6 +26,7 @@ import java.io.FileNotFoundException;
 
 @Controller
 @RequestMapping("/product")
+@Scope("request")
 public class ProductController {
 	
 	final Logger logger = LoggerFactory.getLogger(ProductController.class);
@@ -33,6 +36,9 @@ public class ProductController {
 	
 	@Autowired
 	ProductService productService;
+
+	@Autowired
+	private ShoppingCart sCart;
 	
 	@Autowired
 	HttpSession session;
@@ -53,8 +59,9 @@ public class ProductController {
     	Page<Product> products = productService.findAll(new PageRequest(evalPage, PAGE_SIZE));
     	
 		model.addAttribute("products", products);
+		CartController.addCartToModel(model, sCart);
 
-        return "index";
+		return "index";
     }
     
     @RequestMapping(path = "/detail/{id}", method = RequestMethod.GET)
@@ -72,6 +79,8 @@ public class ProductController {
     		logger.error("Product " + id + " Not Found!");
     		return "redirect:/error";
     	}
+
+		CartController.addCartToModel(model, new ShoppingCart());
 
         return "product_detail";
     }

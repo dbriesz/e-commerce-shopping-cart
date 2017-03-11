@@ -65,6 +65,8 @@ public class CheckoutController {
     		logger.error("No purchases Found!");
     		return("redirect:/error");
     	}
+		CartController.addCartToModel(model, sCart);
+
 		return "checkout_1";
 	}
 
@@ -105,6 +107,8 @@ public class CheckoutController {
     		logger.error("No purchases Found!");
     		return("redirect:/error");
     	}
+		CartController.addCartToModel(model, sCart);
+
 		return "checkout_2";
 	}
 	
