@@ -66,6 +66,8 @@ public class CartController {
     		logger.error("No purchases Found for session ID=" + session.getId());
     		return "redirect:/error";
     	}
+        CartController.addCartToModel(model, sCart);
+
         return "cart";
     }
     

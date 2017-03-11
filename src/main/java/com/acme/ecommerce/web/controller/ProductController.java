@@ -80,7 +80,7 @@ public class ProductController {
     		return "redirect:/error";
     	}
 
-		CartController.addCartToModel(model, new ShoppingCart());
+		CartController.addCartToModel(model, sCart);
 
         return "product_detail";
     }
