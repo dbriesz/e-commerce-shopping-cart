@@ -7,7 +7,7 @@ import com.acme.ecommerce.domain.Purchase;
 import com.acme.ecommerce.domain.ShoppingCart;
 import com.acme.ecommerce.service.ProductService;
 import com.acme.ecommerce.service.PurchaseService;
-import com.acme.ecommerce.web.exceptions.QuantityExceedsStockException;
+import com.acme.ecommerce.web.FlashMessage;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,13 +22,15 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.ui.Model;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.acme.ecommerce.web.FlashMessage.*;
+import static com.acme.ecommerce.web.FlashMessage.Status.SUCCESS;
+import static org.mockito.Matchers.isNotNull;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -118,6 +120,19 @@ public class CartControllerTest {
 	}
 
 	@Test
+	public void addToCartFlashMessageTest() throws Exception {
+		Product product = productBuilder();
+
+		when(productService.findById(1L)).thenReturn(product);
+
+		mockMvc.perform(MockMvcRequestBuilders.post("/cart/add").param("quantity", "1").param("productId", "1"))
+				.andDo(print())
+				.andExpect(status().is3xxRedirection())
+				.andExpect(flash().attributeCount(1))
+				.andExpect(flash().attribute("flash", Matchers.instanceOf(FlashMessage.class)));
+	}
+
+	@Test
 	public void addUnknownToCartTest() throws Exception {
 		when(productService.findById(1L)).thenReturn(null);
 
@@ -135,6 +150,8 @@ public class CartControllerTest {
 
 		mockMvc.perform(MockMvcRequestBuilders.post("/cart/add").param("quantity", "10").param("productId", "1"))
 				.andDo(print())
+				.andExpect(flash().attributeCount(1))
+				.andExpect(flash().attribute("flash", Matchers.instanceOf(FlashMessage.class)))
 				.andExpect(status().is3xxRedirection());
 	}
 
@@ -146,6 +163,8 @@ public class CartControllerTest {
 
 		mockMvc.perform(MockMvcRequestBuilders.post("/cart/update").param("newQuantity", "10").param("productId", "1"))
 				.andDo(print())
+				.andExpect(flash().attributeCount(1))
+				.andExpect(flash().attribute("flash", Matchers.instanceOf(FlashMessage.class)))
 				.andExpect(status().is3xxRedirection());
 	}
 
@@ -163,6 +182,23 @@ public class CartControllerTest {
 				.andDo(print())
 				.andExpect(status().is3xxRedirection())
 				.andExpect(redirectedUrl("/cart"));
+	}
+
+	@Test
+	public void updateCartFlashMessageTest() throws Exception {
+		Product product = productBuilder();
+
+		when(productService.findById(1L)).thenReturn(product);
+
+		Purchase purchase = purchaseBuilder(product);
+
+		when(sCart.getPurchase()).thenReturn(purchase);
+
+		mockMvc.perform(MockMvcRequestBuilders.post("/cart/update").param("newQuantity", "2").param("productId", "1"))
+				.andDo(print())
+				.andExpect(flash().attributeCount(1))
+				.andExpect(flash().attribute("flash", Matchers.instanceOf(FlashMessage.class)))
+				.andExpect(status().is3xxRedirection());
 	}
 
 	@Test
@@ -220,6 +256,43 @@ public class CartControllerTest {
 		mockMvc.perform(MockMvcRequestBuilders.post("/cart/remove").param("productId", "1")).andDo(print())
 				.andExpect(status().is3xxRedirection())
 				.andExpect(redirectedUrl("/cart"));
+	}
+
+	@Test
+	public void removeFromCartFlashMessageTest() throws Exception {
+		Product product = productBuilder();
+
+		Product product2 = productBuilder();
+		product2.setId(2L);
+
+		when(productService.findById(1L)).thenReturn(product);
+
+		ProductPurchase pp = new ProductPurchase();
+		pp.setProductPurchaseId(1L);
+		pp.setQuantity(1);
+		pp.setProduct(product);
+
+		ProductPurchase pp2 = new ProductPurchase();
+		pp2.setProductPurchaseId(2L);
+		pp2.setQuantity(2);
+		pp2.setProduct(product2);
+
+		List<ProductPurchase> ppList = new ArrayList<ProductPurchase>();
+		ppList.add(pp);
+		ppList.add(pp2);
+
+		Purchase purchase = new Purchase();
+		purchase.setId(1L);
+		purchase.setProductPurchases(ppList);
+
+		when(sCart.getPurchase()).thenReturn(purchase);
+
+		when(purchaseService.save(purchase)).thenReturn(purchase);
+
+		mockMvc.perform(MockMvcRequestBuilders.post("/cart/remove").param("productId", "1")).andDo(print())
+				.andExpect(flash().attributeCount(1))
+				.andExpect(flash().attribute("flash", Matchers.instanceOf(FlashMessage.class)))
+				.andExpect(status().is3xxRedirection());
 	}
 
 	@Test
@@ -292,6 +365,43 @@ public class CartControllerTest {
 		mockMvc.perform(MockMvcRequestBuilders.post("/cart/empty")).andDo(print())
 				.andExpect(status().is3xxRedirection())
 				.andExpect(redirectedUrl("/product/"));
+	}
+
+	@Test
+	public void emptyCartFlashMessageTest() throws Exception {
+		Product product = productBuilder();
+
+		Product product2 = productBuilder();
+		product2.setId(2L);
+
+		when(productService.findById(1L)).thenReturn(product);
+
+		ProductPurchase pp = new ProductPurchase();
+		pp.setProductPurchaseId(1L);
+		pp.setQuantity(1);
+		pp.setProduct(product);
+
+		ProductPurchase pp2 = new ProductPurchase();
+		pp2.setProductPurchaseId(2L);
+		pp2.setQuantity(2);
+		pp2.setProduct(product2);
+
+		List<ProductPurchase> ppList = new ArrayList<ProductPurchase>();
+		ppList.add(pp);
+		ppList.add(pp2);
+
+		Purchase purchase = new Purchase();
+		purchase.setId(1L);
+		purchase.setProductPurchases(ppList);
+
+		when(sCart.getPurchase()).thenReturn(purchase);
+
+		when(purchaseService.save(purchase)).thenReturn(purchase);
+
+		mockMvc.perform(MockMvcRequestBuilders.post("/cart/empty")).andDo(print())
+				.andExpect(flash().attributeCount(1))
+				.andExpect(flash().attribute("flash", Matchers.instanceOf(FlashMessage.class)))
+				.andExpect(status().is3xxRedirection());
 	}
 
 	@Test
