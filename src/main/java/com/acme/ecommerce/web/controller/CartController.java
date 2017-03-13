@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.FlashMap;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.support.RequestContextUtils;
 import org.springframework.web.servlet.view.RedirectView;
 
@@ -27,6 +28,7 @@ import javax.servlet.http.HttpSession;
 import java.math.BigDecimal;
 
 import static com.acme.ecommerce.web.FlashMessage.Status.FAILURE;
+import static com.acme.ecommerce.web.FlashMessage.Status.SUCCESS;
 
 @Controller
 @RequestMapping("/cart")
@@ -73,7 +75,8 @@ public class CartController {
     
     @RequestMapping(path="/add", method = RequestMethod.POST)
     public RedirectView addToCart(@ModelAttribute(value="productId") long productId,
-                                  @ModelAttribute(value="quantity") int quantity) throws Exception {
+                                  @ModelAttribute(value="quantity") int quantity,
+                                  RedirectAttributes redirectAttributes) throws Exception {
     	boolean productAlreadyInCart = false;
     	RedirectView redirect = new RedirectView("/product/");
 		redirect.setExposeModelAttributes(false);
@@ -109,6 +112,7 @@ public class CartController {
             }
             logger.debug("Added " + quantity + " of " + addProduct.getName() + " to cart");
             sCart.setPurchase(purchaseService.save(purchase));
+            redirectAttributes.addFlashAttribute("flash",new FlashMessage("Added " + quantity + " " + addProduct.getName() + " to cart", SUCCESS));
         } else {
             logger.error("Attempt to add unknown product: " + productId);
             redirect.setUrl("/error");
@@ -119,7 +123,8 @@ public class CartController {
  
     @RequestMapping(path="/update", method = RequestMethod.POST)
     public RedirectView updateCart(@ModelAttribute(value="productId") long productId,
-                                   @ModelAttribute(value="newQuantity") int newQuantity) throws Exception {
+                                   @ModelAttribute(value="newQuantity") int newQuantity,
+                                   RedirectAttributes redirectAttributes) throws Exception {
     	logger.debug("Updating Product: " + productId + " with Quantity: " + newQuantity);
 		RedirectView redirect = new RedirectView("/cart");
 		redirect.setExposeModelAttributes(false);
@@ -149,6 +154,7 @@ public class CartController {
                 }
             }
             sCart.setPurchase(purchaseService.save(purchase));
+            redirectAttributes.addFlashAttribute("flash",new FlashMessage("Updated " + updateProduct.getName() + " to " + newQuantity, SUCCESS));
         } else {
             logger.error("Attempt to update on non-existent product");
             redirect.setUrl("/error");

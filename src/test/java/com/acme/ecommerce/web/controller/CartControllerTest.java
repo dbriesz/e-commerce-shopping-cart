@@ -22,6 +22,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.ui.Model;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
 import java.math.BigDecimal;
@@ -88,6 +89,20 @@ public class CartControllerTest {
 		mockMvc.perform(MockMvcRequestBuilders.get("/cart")).andDo(print())
 				.andExpect(status().is3xxRedirection())
 				.andExpect(redirectedUrl("/error"));
+	}
+
+	@Test
+	public void verifyRenderedViewContainsSubtotal() throws Exception {
+		Product product = productBuilder();
+
+		when(productService.findById(1L)).thenReturn(product);
+
+		Purchase purchase = purchaseBuilder(product);
+
+		when(sCart.getPurchase()).thenReturn(purchase);
+		mockMvc.perform(MockMvcRequestBuilders.get("/cart"))
+				.andDo(print())
+				.andExpect(model().attributeExists("subTotal"));
 	}
 
 	@Test
