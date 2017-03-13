@@ -26,10 +26,6 @@ public class PurchaseServiceImpl implements PurchaseService {
 	@Override
 	public Purchase findById(Long id) {
 		Purchase result = repository.findOne(id);
-
-		if (result == null) {
-			throw new ProductIdNotFoundException();
-		}
 		
 		return result;
 	}

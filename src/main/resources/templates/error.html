@@ -5,9 +5,11 @@
 <header th:replace="layout :: header"></header>
 <div class="container">
     <div th:replace="layout :: flash"></div>
-    <div class="error">
-        <p th:text="${errorMessage}"></p>
-    </div>
+    <section class="cart">
+        <div class="error">
+            <h3 th:text="${errorMessage}"></h3>
+        </div>
+    </section>
 </div>
 </body>
 </html>
