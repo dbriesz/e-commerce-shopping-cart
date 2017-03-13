@@ -154,7 +154,7 @@ public class CartController {
                 }
             }
             sCart.setPurchase(purchaseService.save(purchase));
-            redirectAttributes.addFlashAttribute("flash",new FlashMessage("Updated " + updateProduct.getName() + " to " + newQuantity, SUCCESS));
+            redirectAttributes.addFlashAttribute("flash",new FlashMessage("Updated " + updateProduct.getName() + " quantity to " + newQuantity, SUCCESS));
         } else {
             logger.error("Attempt to update on non-existent product");
             redirect.setUrl("/error");
@@ -164,7 +164,8 @@ public class CartController {
     }
     
     @RequestMapping(path="/remove", method = RequestMethod.POST)
-    public RedirectView removeFromCart(@ModelAttribute(value="productId") long productId) {
+    public RedirectView removeFromCart(@ModelAttribute(value="productId") long productId,
+                                       RedirectAttributes redirectAttributes) {
     	logger.debug("Removing Product: " + productId);
 		RedirectView redirect = new RedirectView("/cart");
 		redirect.setExposeModelAttributes(false);
@@ -183,6 +184,7 @@ public class CartController {
     				}
     			}
     			purchase = purchaseService.save(purchase);
+                redirectAttributes.addFlashAttribute("flash",new FlashMessage("Removed " + updateProduct.getName() + " from cart", SUCCESS));
     			sCart.setPurchase(purchase);
     			if (purchase.getProductPurchases().isEmpty()) {
         	    	//if last item in cart redirect to product else return cart
@@ -201,7 +203,7 @@ public class CartController {
     }
     
     @RequestMapping(path="/empty", method = RequestMethod.POST)
-    public RedirectView emptyCart() {
+    public RedirectView emptyCart(RedirectAttributes redirectAttributes) {
     	RedirectView redirect = new RedirectView("/product/");
 		redirect.setExposeModelAttributes(false);
     	
@@ -210,6 +212,7 @@ public class CartController {
 		if (purchase != null) {
 			purchase.getProductPurchases().clear();
 			sCart.setPurchase(purchaseService.save(purchase));
+            redirectAttributes.addFlashAttribute("flash",new FlashMessage("Cart successfully emptied!", SUCCESS));
 		} else {
 			logger.error("Unable to find shopping cart for update");
 			redirect.setUrl("/error");
