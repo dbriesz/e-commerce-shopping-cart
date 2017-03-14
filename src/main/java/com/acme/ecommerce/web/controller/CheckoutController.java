@@ -2,6 +2,7 @@ package com.acme.ecommerce.web.controller;
 
 import com.acme.ecommerce.domain.*;
 import com.acme.ecommerce.service.PurchaseService;
+import com.acme.ecommerce.web.FlashMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,14 +72,19 @@ public class CheckoutController {
 	}
 
 	@RequestMapping(path="/coupon", method = RequestMethod.POST)
-	String postCouponCode(Model model, @ModelAttribute(value="couponCode") @Valid CouponCode couponCode, BindingResult result) {
+	String postCouponCode(Model model, @ModelAttribute(value="couponCode") @Valid CouponCode couponCode,
+						  BindingResult result, RedirectAttributes redirectAttributes) {
 		if (result.hasErrors()) {
+			redirectAttributes.addFlashAttribute("flash",
+					new FlashMessage("Must be between 5 and 10 characters. Please try again.", FlashMessage.Status.FAILURE));
+			sCart.setCouponCode(null);
 			return "redirect:/checkout/coupon";
+		} else {
+			sCart.setCouponCode(couponCode);
+			redirectAttributes.addFlashAttribute("flash", new FlashMessage("Coupon applied!", FlashMessage.Status.SUCCESS));
+
+			return "redirect:shipping";
 		}
-
-		sCart.setCouponCode(couponCode);
-
-		return "redirect:shipping";
 	}
 	
 	@RequestMapping(path="/shipping", method=RequestMethod.GET)
@@ -278,8 +284,6 @@ public class CheckoutController {
 	    		
 	    		ctx.setVariable("orderNumber", purchase.getOrderNumber());
 	    		ctx.setVariable("shippingAddress", purchase.getShippingAddress());
-/*	    		ctx.setVariable("billingAddress", purchase.getBillingAddress());
-	    		ctx.setVariable("creditCard", purchase.getCreditCardNumber());*/
 	    		
 	    		final String htmlContent = this.templateEngine.process("email_confirmation", ctx);
 			

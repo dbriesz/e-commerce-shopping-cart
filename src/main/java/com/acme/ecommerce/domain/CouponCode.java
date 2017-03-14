@@ -3,6 +3,8 @@ package com.acme.ecommerce.domain;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import javax.persistence.Column;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 @Component
