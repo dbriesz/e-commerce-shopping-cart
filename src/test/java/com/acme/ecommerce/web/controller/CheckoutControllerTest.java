@@ -273,6 +273,7 @@ public class CheckoutControllerTest {
 		when(productService.findById(1L)).thenReturn(product);
 
 		Purchase purchase = purchaseBuilder(product);
+		purchase.setCreditCardNumber("0000000000000000");
 		when(sCart.getPurchase()).thenReturn(purchase);
 
 		CouponCode coupon = new CouponCode();
