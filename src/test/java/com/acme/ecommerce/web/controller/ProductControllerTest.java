@@ -59,7 +59,6 @@ public class ProductControllerTest {
 
 	@Test
 	public void getIndex() throws Exception {
-		
 		Product product = productBuilder();
 		
 		Product product2 = productBuilder();
@@ -70,7 +69,7 @@ public class ProductControllerTest {
 		pList.add(product2);
 		
 		Page<Product> products = new PageImpl<Product>(pList);
-		
+
 		when(productService.findAll(new PageRequest(1, 2))).thenReturn(products);
 		
 		mockMvc.perform(MockMvcRequestBuilders.get("/product/"))

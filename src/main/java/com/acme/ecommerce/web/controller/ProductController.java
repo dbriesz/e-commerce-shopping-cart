@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
@@ -61,6 +62,11 @@ public class ProductController {
     	Page<Product> products = productService.findAll(new PageRequest(evalPage, PAGE_SIZE));
     	
 		model.addAttribute("products", products);
+
+		if (sCart == null) {
+			sCart = new ShoppingCart();
+		}
+
 		CartController.addCartToModel(model, sCart);
 
 		return "index";
@@ -82,6 +88,10 @@ public class ProductController {
     		return "redirect:/error";
     	}
 
+    	if (sCart == null) {
+    		sCart = new ShoppingCart();
+		}
+
 		CartController.addCartToModel(model, sCart);
 
         return "product_detail";
@@ -102,8 +112,8 @@ public class ProductController {
     			imagePath = imagePath + "/";
     		}
     		imageFilePath = imagePath + returnProduct.getFullImageName();
-    	} 
-    	File imageFile = new File(imageFilePath);
+    	}
+		File imageFile = new File(imageFilePath);
     	
     	return ResponseEntity.ok()
                 .contentLength(imageFile.length())

@@ -284,6 +284,9 @@ public class CheckoutController {
 	    		
 	    		ctx.setVariable("orderNumber", purchase.getOrderNumber());
 	    		ctx.setVariable("shippingAddress", purchase.getShippingAddress());
+				ctx.setVariable("billingAddress", purchase.getBillingAddress());
+				String creditCardNumber = purchase.getCreditCardNumber();
+				ctx.setVariable("creditCard", "x" + creditCardNumber.substring(creditCardNumber.length() - 4));
 	    		
 	    		final String htmlContent = this.templateEngine.process("email_confirmation", ctx);
 			
