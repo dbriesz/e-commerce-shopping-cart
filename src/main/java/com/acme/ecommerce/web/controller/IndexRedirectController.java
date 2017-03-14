@@ -1,11 +1,11 @@
-package com.acme.ecommerce.controller;
+package com.acme.ecommerce.web.controller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import static com.acme.ecommerce.controller.WebConstants.REDIRECT_TO_BASE;
+import static com.acme.ecommerce.web.controller.WebConstants.REDIRECT_TO_BASE;
 
 @Controller
 public class IndexRedirectController {

@@ -1,4 +1,4 @@
-package com.acme.ecommerce.controller;
+package com.acme.ecommerce.web.controller;
 
 import com.acme.ecommerce.Application;
 import com.acme.ecommerce.domain.*;
@@ -70,6 +70,14 @@ public class CheckoutControllerTest {
 		when(sCart.getPurchase()).thenReturn(purchase);
 		mockMvc.perform(MockMvcRequestBuilders.get("/checkout/coupon")).andDo(print()).andExpect(status().isOk())
 				.andExpect(view().name("checkout_1"));
+	}
+
+	@Test
+	public void postCouponTestValidationFail() throws Exception {
+
+		mockMvc.perform(MockMvcRequestBuilders.post("/checkout/coupon").param("code", "abc")).andDo(print())
+				.andExpect(status().is3xxRedirection())
+				.andExpect(redirectedUrl("/checkout/coupon"));
 	}
 
 	@Test
@@ -265,6 +273,7 @@ public class CheckoutControllerTest {
 		when(productService.findById(1L)).thenReturn(product);
 
 		Purchase purchase = purchaseBuilder(product);
+		purchase.setCreditCardNumber("0000000000000000");
 		when(sCart.getPurchase()).thenReturn(purchase);
 
 		CouponCode coupon = new CouponCode();

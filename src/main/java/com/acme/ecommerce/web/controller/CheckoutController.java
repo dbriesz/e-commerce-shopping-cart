@@ -1,7 +1,8 @@
-package com.acme.ecommerce.controller;
+package com.acme.ecommerce.web.controller;
 
 import com.acme.ecommerce.domain.*;
 import com.acme.ecommerce.service.PurchaseService;
+import com.acme.ecommerce.web.FlashMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +27,7 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static com.acme.ecommerce.controller.WebConstants.*;
+import static com.acme.ecommerce.web.controller.WebConstants.*;
 
 
 @Controller
@@ -65,14 +66,25 @@ public class CheckoutController {
     		logger.error("No purchases Found!");
     		return("redirect:/error");
     	}
+		CartController.addCartToModel(model, sCart);
+
 		return "checkout_1";
 	}
 
 	@RequestMapping(path="/coupon", method = RequestMethod.POST)
-	String postCouponCode(Model model, @ModelAttribute(value="couponCode") CouponCode couponCode) {
-    	sCart.setCouponCode(couponCode);
-   	
-		return "redirect:shipping";
+	String postCouponCode(Model model, @ModelAttribute(value="couponCode") @Valid CouponCode couponCode,
+						  BindingResult result, RedirectAttributes redirectAttributes) {
+		if (result.hasErrors()) {
+			redirectAttributes.addFlashAttribute("flash",
+					new FlashMessage("Must be between 5 and 10 characters. Please try again.", FlashMessage.Status.FAILURE));
+			sCart.setCouponCode(null);
+			return "redirect:/checkout/coupon";
+		} else {
+			sCart.setCouponCode(couponCode);
+			redirectAttributes.addFlashAttribute("flash", new FlashMessage("Coupon applied!", FlashMessage.Status.SUCCESS));
+
+			return "redirect:shipping";
+		}
 	}
 	
 	@RequestMapping(path="/shipping", method=RequestMethod.GET)
@@ -101,6 +113,8 @@ public class CheckoutController {
     		logger.error("No purchases Found!");
     		return("redirect:/error");
     	}
+		CartController.addCartToModel(model, sCart);
+
 		return "checkout_2";
 	}
 	
@@ -235,7 +249,9 @@ public class CheckoutController {
     		model.addAttribute("orderNumber", purchase.getOrderNumber());
     		model.addAttribute("shippingAddress", purchase.getShippingAddress());
     		model.addAttribute("billingAddress", purchase.getBillingAddress());
-    		model.addAttribute("creditCard", purchase.getCreditCardNumber());
+
+			String creditCardNumber = purchase.getCreditCardNumber();
+			model.addAttribute("creditCard", "x" + creditCardNumber.substring(creditCardNumber.length() - 4));
     	} else {
     		logger.error("No purchases Found!");
     		return("redirect:/error");
@@ -268,9 +284,12 @@ public class CheckoutController {
 	    		
 	    		ctx.setVariable("orderNumber", purchase.getOrderNumber());
 	    		ctx.setVariable("shippingAddress", purchase.getShippingAddress());
-	    		ctx.setVariable("billingAddress", purchase.getBillingAddress());
-	    		ctx.setVariable("creditCard", purchase.getCreditCardNumber());
-	    		
+/*
+				ctx.setVariable("billingAddress", purchase.getBillingAddress());
+				String creditCardNumber = purchase.getCreditCardNumber();
+				ctx.setVariable("creditCard", "x" + creditCardNumber.substring(creditCardNumber.length() - 4));
+*/
+
 	    		final String htmlContent = this.templateEngine.process("email_confirmation", ctx);
 			
 		    	response.setHeader("Content-Disposition", "attachment; filename=email_receipt.html");

@@ -2,6 +2,7 @@ package com.acme.ecommerce.service;
 
 import com.acme.ecommerce.domain.Purchase;
 import com.acme.ecommerce.repository.PurchaseRepository;
+import com.acme.ecommerce.web.exceptions.ProductIdNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
