@@ -53,6 +53,7 @@ public class CartController {
     	logger.debug("Getting Product List");
     	logger.debug("Session ID = " + session.getId());
 
+        model.addAttribute("page_title", "View Cart");
     	Purchase purchase = sCart.getPurchase();
     	BigDecimal subTotal = new BigDecimal(0);
     	

@@ -60,7 +60,8 @@ public class ProductController {
 		int evalPage = (page == null || page < 1) ? INITIAL_PAGE : page - 1;
     	
     	Page<Product> products = productService.findAll(new PageRequest(evalPage, PAGE_SIZE));
-    	
+
+		model.addAttribute("page_title", "Home");
 		model.addAttribute("products", products);
 
 		if (sCart == null) {
@@ -75,7 +76,8 @@ public class ProductController {
     @RequestMapping(path = "/detail/{id}", method = RequestMethod.GET)
     public String productDetail(@PathVariable long id, Model model) {
     	logger.debug("Details for Product " + id);
-    	
+
+		model.addAttribute("page_title", "Product Detail");
     	Product returnProduct = productService.findById(id);
     	if (returnProduct != null) {
     		model.addAttribute("product", returnProduct);
@@ -122,7 +124,8 @@ public class ProductController {
     }
     
     @RequestMapping(path = "/about")
-    public String aboutCartShop() {
+    public String aboutCartShop(Model model) {
+		model.addAttribute("page_title", "About");
     	logger.warn("Happy Easter! Someone actually clicked on About.");
     	return("about");
     }

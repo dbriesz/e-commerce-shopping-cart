@@ -50,7 +50,8 @@ public class CheckoutController {
     	Purchase purchase = sCart.getPurchase();
     	BigDecimal subTotal = new BigDecimal(0);
     	CouponCode couponCode = sCart.getCouponCode();
-    	
+
+		model.addAttribute("page_title", "Coupon");
     	model.addAttribute("purchase", purchase);
     	if (purchase != null) {
     		
@@ -92,7 +93,8 @@ public class CheckoutController {
     	Purchase purchase = sCart.getPurchase();
     	BigDecimal subTotal = new BigDecimal(0);
     	CouponCode couponCode = sCart.getCouponCode();
-    	
+
+		model.addAttribute("page_title", "Shipping");
     	model.addAttribute("purchase", purchase);
     	if (purchase != null) {
     		subTotal = computeSubtotal(purchase, couponCode);
@@ -146,7 +148,8 @@ public class CheckoutController {
     	BigDecimal subTotal = new BigDecimal(0);
     	BigDecimal shippingCost = new BigDecimal(0);
     	CouponCode couponCode = sCart.getCouponCode();
-    	
+
+		model.addAttribute("page_title", "Billing");
     	model.addAttribute("purchase", purchase);
     	if (purchase != null) {
     		
@@ -235,7 +238,8 @@ public class CheckoutController {
     	BigDecimal subTotal = new BigDecimal(0);
        	BigDecimal shippingCost = new BigDecimal(0);
     	CouponCode couponCode = sCart.getCouponCode();
-    	
+
+		model.addAttribute("page_title", "Order Confirmation");
     	model.addAttribute("purchase", purchase);
     	if (purchase != null) {
     		subTotal = computeSubtotal(purchase, couponCode);
